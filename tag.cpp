@@ -33,30 +33,91 @@ char* toUTF8(char* in, char* outBuf, size_t outlen) {
 
 lua_State *state;
 void loadLua(char* filename) {
+    FILE *file_exist_check;
+    int r;
     state = luaL_newstate();
     luaL_openlibs(state);
     
-    char library_filename[256];
-    snprintf(library_filename, 256, "%s/lua/sosi2osm.lua", dirname(execname));
-    
-    int r = luaL_loadfile(state, library_filename);
-    if (r) {
-        fprintf(stderr, "Failed to load lua library file %s\n", library_filename);
-        exit(1);
+    char filename_string[256];
+    snprintf(filename_string, 256, "%s/lua/sosi2osm.lua", dirname(execname));
+    if(file_exist_check = fopen(filename_string, "r")){
+        fclose(file_exist_check);
+        r = luaL_loadfile(state, filename_string);
+        if (r) {
+            fprintf(stderr, "Failed to load lua library file %s\n", filename_string);
+            exit(1);
+        }
     }
+    else {
+        snprintf(filename_string, 256, "/usr/local/share/sosi2osm/lua/sosi2osm.lua");
+        if(file_exist_check = fopen(filename_string, "r")){
+            fclose(file_exist_check);
+            r = luaL_loadfile(state, filename_string);
+            if (r) {
+                fprintf(stderr, "Failed to load lua library file %s\n", filename_string);
+                exit(1);
+            }
+        }
+        else {
+            snprintf(filename_string, 256, "/usr/share/sosi2osm/lua/sosi2osm.lua");
+            if(file_exist_check = fopen(filename_string, "r")){
+                fclose(file_exist_check);
+                r = luaL_loadfile(state, filename_string);
+                if (r) {
+                    fprintf(stderr, "Failed to load lua library file %s\n", filename_string);
+                    exit(1);
+                }
+                
+            }
+            else {
+                fprintf(stderr, "Could not find sosi2osm.lua. It has to be installed in /usr/share/sosi2osm/lua/ or /usr/local/share/sosi2osm/lua/\n");
+                exit(1);
+            }
+        }
+    }
+    
     lua_call(state, 0, 0);
     
-    r = luaL_loadfile(state, filename);
-    if (r) {
-        fprintf(stderr, "Failed to load lua file %s\n", filename);
-        exit(1);
+    if(file_exist_check = fopen(filename, "r")) {
+        fclose(file_exist_check);
+        r = luaL_loadfile(state, filename);
+        if (r) {
+            fprintf(stderr, "Failed to load lua file %s\n", filename);
+            exit(1);
+        }
+    }
+    else {
+        snprintf(filename_string, 256, "/usr/local/share/sosi2osm/lua/%s",filename);
+        if(file_exist_check = fopen(filename_string, "r")) {
+            fclose(file_exist_check);
+            r = luaL_loadfile(state, filename_string);
+            if (r) {
+                fprintf(stderr, "Failed to load lua file %s\n", filename_string);
+                exit(1);
+            }
+        }
+        else {
+            snprintf(filename_string, 256, "/usr/share/sosi2osm/lua/%s",filename);
+            if(file_exist_check = fopen(filename_string, "r")) {
+                fclose(file_exist_check);
+                r = luaL_loadfile(state, filename_string);
+                if(r) {
+                    fprintf(stderr, "Failed to load lua file %s\n", filename_string);
+                    exit(1);
+                }
+            }
+            else {
+                fprintf(stderr, "Could not find %s. It has to be installed in /usr/share/sosi2osm/lua/ or /usr/local/share/sosi2osm/lua/\n",filename);
+                exit(1);
+            }
+        }
     }
     
     
     lua_setglobal(state, "getTagsFromInfoTable");
 }
 
-void outputTags() {
+void outputTags(FILE* output) {
     lua_getglobal(state, "getTagsFromInfoTable");
     lua_newtable(state);
     int size = 0;
@@ -83,7 +144,7 @@ void outputTags() {
         }
         const char* key = lua_tostring(state, -2);
         const char* value = lua_tostring(state, -1);
-        printf("<tag k=\"%s\" v=\"%s\"/>", key, value);
+        fprintf(output, "<tag k=\"%s\" v=\"%s\"/>", key, value);
         lua_pop(state, 1);
     }
     
