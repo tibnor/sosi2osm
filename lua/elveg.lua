@@ -9,42 +9,41 @@ for i, indent, tokens in tokens, info, 0 do
     elseif tokens[1] == "VNR" then
         ref = tokens[4]
         if tokens[2] == "E" then
-            highway = "primary"
+            highway = "trunk"
         elseif tokens[2] == "F" then
-            highway = "secondary"
+            highway = "primary"
         elseif tokens[2] == "G" then
-            out["highway"] = "path"
+            out["highway"] = "cycleway"
             out["bicycle"] = "designated"
             out["foot"] = "designated"
         elseif tokens[2] == "K" then
-            highway = "tertiary"
+            highway = "unclassified"
         elseif tokens[2] == "P" then
-            highway = "residential"
+            highway = "service"
             isPrivate = 1
         elseif tokens[2] == "R" then
-            highway = "primary"
+            highway = "trunk"
         elseif tokens[2] == "S" then
             highway = "track"
         else
             out["FIXME"] = "FIXME"
             highway = tokens[2]
         end
-
     elseif tokens[1] == "OBJTYPE" then
         if tokens[2] == "VegSenterlinje" or tokens[2] == "Kjørebane"  then
             isRoad = 1
         elseif tokens[2] == "Fortau" or tokens[2] == "GangSykkelVegSenterlinje" then
-            out["highway"] = "path"
+            out["highway"] = "cycleway"
             out["bicycle"] = "designated"
             out["foot"] = "designated"
         elseif tokens[2] == "Bilferjestrekning" then
             out["route"] = "ferry"
         elseif tokens[2] == "Kjørefelt" then
-            return;
+            return {}
         elseif tokens[2] == "Ferjekai" then
             out["amenity"] = "ferry_terminal"
         elseif tokens[2] =="Kommunedele" then
-            return;
+            return {}
         else
             out["FIXME"] = "FIXME"
             out[tokens[1]] = tokens[2]
